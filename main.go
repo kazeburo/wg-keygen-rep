@@ -15,8 +15,6 @@ import (
 var version string
 
 const UNKNOWN = 3
-const CRITICAL = 2
-const WARNING = 1
 const OK = 0
 
 const keyLen = 32
@@ -30,6 +28,7 @@ type keyPair struct {
 
 type commandOpts struct {
 	Salt    string `short:"s" long:"salt" description:"salt string for generating private key"`
+	JSON    bool   `long:"json" description:"output with JSON format"`
 	Version bool   `short:"v" long:"version" description:"Show version"`
 }
 
@@ -93,7 +92,13 @@ func _main() int {
 		return OK
 	}
 
-	r, _ := json.Marshal(GenerateKeyPair(opts.Salt))
-	fmt.Println(string(r))
+	r := GenerateKeyPair(opts.Salt)
+	if opts.JSON {
+		j, _ := json.Marshal(r)
+		fmt.Println(string(j))
+	} else {
+		fmt.Printf("priv: %s\n", r.Priv)
+		fmt.Printf("pub: %s\n", r.Pub)
+	}
 	return OK
 }
