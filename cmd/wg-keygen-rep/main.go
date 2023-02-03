@@ -8,14 +8,15 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/google/uuid"
 	"github.com/jessevdk/go-flags"
 	"golang.org/x/crypto/curve25519"
 )
 
 var version string
 
-const UNKNOWN = 3
-const OK = 0
+const StatusCodeOK = 0
+const StatusCodeUnknown = 3
 
 const keyLen = 32
 
@@ -26,17 +27,10 @@ type keyPair struct {
 	Pub  string `json:"pub"`
 }
 
-type commandOpts struct {
-	Salt    string `short:"s" long:"salt" description:"salt string for generating private key"`
+type Opt struct {
+	Salt    string `short:"s" long:"salt" description:"salt string for generating private key. not specified uuid is used by default"`
 	JSON    bool   `long:"json" description:"output with JSON format"`
 	Version bool   `short:"v" long:"version" description:"Show version"`
-}
-
-func printVersion() {
-	fmt.Printf(`%s Compiler: %s %s`,
-		version,
-		runtime.Compiler,
-		runtime.Version())
 }
 
 func GenerateKeyPair(salt string) keyPair {
@@ -80,25 +74,35 @@ func main() {
 }
 
 func _main() int {
-	opts := commandOpts{}
-	psr := flags.NewParser(&opts, flags.Default)
+	opt := &Opt{}
+	psr := flags.NewParser(opt, flags.HelpFlag|flags.PassDoubleDash)
 	_, err := psr.Parse()
+	if opt.Version {
+		fmt.Printf(`%s %s
+Compiler: %s %s
+`,
+			os.Args[0],
+			version,
+			runtime.Compiler,
+			runtime.Version())
+		os.Exit(StatusCodeOK)
+	}
 	if err != nil {
-		os.Exit(UNKNOWN)
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(StatusCodeUnknown)
 	}
 
-	if opts.Version {
-		printVersion()
-		return OK
+	if opt.Salt == "" {
+		opt.Salt = uuid.NewString()
 	}
 
-	r := GenerateKeyPair(opts.Salt)
-	if opts.JSON {
+	r := GenerateKeyPair(opt.Salt)
+	if opt.JSON {
 		j, _ := json.Marshal(r)
 		fmt.Println(string(j))
 	} else {
 		fmt.Printf("priv: %s\n", r.Priv)
 		fmt.Printf("pub: %s\n", r.Pub)
 	}
-	return OK
+	return StatusCodeOK
 }

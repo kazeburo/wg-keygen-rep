@@ -5,11 +5,11 @@ all: wg-keygen-rep
 
 .PHONY: wg-keygen-rep
 
-wg-keygen-rep: main.go
-	go build $(LDFLAGS) -o wg-keygen-rep main.go
+wg-keygen-rep: cmd/wg-keygen-rep/main.go
+	go build $(LDFLAGS) -o wg-keygen-rep cmd/wg-keygen-rep/main.go
 
-linux: main.go
-	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o wg-keygen-rep main.go
+linux: cmd/wg-keygen-rep/main.go
+	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o wg-keygen-rep cmd/wg-keygen-rep/main.go
 
 check:
 	go test ./...

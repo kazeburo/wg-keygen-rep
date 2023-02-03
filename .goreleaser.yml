@@ -1,5 +1,6 @@
 builds:
   - binary: wg-keygen-rep
+    main: ./cmd/wg-keygen-rep
     goos:
       - darwin
       - linux
